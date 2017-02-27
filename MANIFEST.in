@@ -1,0 +1,2 @@
+include *.rst *.md
+recursive-include tests *.txt *.py
