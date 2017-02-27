@@ -11,8 +11,20 @@ assert sys.version_info >= (3, 5, 0), "flake8-mypy requires Python 3.5+"
 
 
 current_dir = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(current_dir, 'README.md'), encoding='utf8') as ld_file:
-    long_description = ld_file.read()
+readme_md = os.path.join(current_dir, 'README.md')
+try:
+    import pypandoc
+    long_description = pypandoc.convert_file(readme_md, 'rst')
+except(IOError, ImportError):
+    print()
+    print(
+        '\x1b[31m\x1b[1mwarning:\x1b[0m\x1b[31m pandoc not found, '
+        'long description will be ugly (PyPI does not support .md).'
+        '\x1b[0m'
+    )
+    print()
+    with open(readme_md, encoding='utf8') as ld_file:
+        long_description = ld_file.read()
 
 
 _version_re = re.compile(r'__version__\s+=\s+(?P<version>.*)')
