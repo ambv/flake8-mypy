@@ -2,7 +2,7 @@ from pathlib import Path
 import unittest
 from unittest import mock
 
-from flake8_mypy import MypyChecker, T484
+from flake8_mypy import MypyChecker, T484, T400
 
 
 class MypyTestCase(unittest.TestCase):
@@ -38,6 +38,13 @@ class MypyTestCase(unittest.TestCase):
                         'Unsupported operand types for + ("int" and "str")',
                     ),
                 ),
+                T400(
+                    13,
+                    0,
+                    vars=(
+                        "unused 'type: ignore' comment",
+                    )
+                )
             ),
         )
 
