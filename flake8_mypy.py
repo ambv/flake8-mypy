@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
+import ast
 from collections import namedtuple
 from functools import partial
+import itertools
 import logging
-import os
 from pathlib import Path
 import re
 from tempfile import NamedTemporaryFile
 import traceback
 
 import attr
-import pycodestyle
 import mypy.api
+import pycodestyle
 
 
 __version__ = '17.2.0'
@@ -79,7 +80,7 @@ DEFAULT_ARGUMENTS = make_arguments(
 )
 
 
-@attr.s(hash=False)
+@attr.s(slots=True, hash=False)
 class MypyChecker:
     name = 'flake8-mypy'
     version = __version__
@@ -88,10 +89,17 @@ class MypyChecker:
     filename = attr.ib(default='(none)')
     lines = attr.ib(default=[])
     options = attr.ib(default=None)
+    visitor = attr.ib(default=attr.Factory(lambda: TypingVisitor))
 
     def run(self):
         if not self.lines:
             return  # empty file, no need checking.
+
+        visitor = self.visitor()
+        visitor.visit(self.tree)
+
+        if not visitor.should_type_check:
+            return  # typing not used in the module
 
         if self.filename in ('(none)', 'stdin'):
             with NamedTemporaryFile('w', prefix='tmpmypy_', suffix='.py') as f:
@@ -106,6 +114,8 @@ class MypyChecker:
     def _run(self):
         mypy_cmdline = self.build_mypy_cmdline(self.filename, self.options.mypy_config)
         re_filename = self.filename.replace('.', r'\.')
+        if re_filename.startswith(r'\./'):
+            re_filename = re_filename[3:]
         mypy_re = re.compile(
             MYPY_ERROR_TEMPLATE.format(filename=re_filename),
             re.VERBOSE,
@@ -180,6 +190,60 @@ class MypyChecker:
             return ['--config-file=' + mypy_config, filename]
 
         return DEFAULT_ARGUMENTS + [filename]
+
+
+@attr.s
+class TypingVisitor(ast.NodeVisitor):
+    """Used to determine if the file is using annotations at all."""
+    should_type_check = attr.ib(default=False)
+
+    def visit_FunctionDef(self, node):
+        if node.returns:
+            self.should_type_check = True
+            return
+
+        for arg in itertools.chain(node.args.args, node.args.kwonlyargs):
+            if arg.annotation:
+                self.should_type_check = True
+                return
+
+        va = node.args.vararg
+        kw = node.args.kwarg
+        if (va and va.annotation) or (kw and kw.annotation):
+            self.should_type_check = True
+
+    def visit_Import(self, node):
+        for name in node.names:
+            if (
+                isinstance(name, ast.alias) and
+                name.name == 'typing' or
+                name.name.startswith('typing.')
+            ):
+                self.should_type_check = True
+                break
+
+    def visit_ImportFrom(self, node):
+        if (
+            node.level == 0 and
+            node.module == 'typing' or
+            node.module.startswith('typing.')
+        ):
+            self.should_type_check = True
+
+    def generic_visit(self, node):
+        """Called if no explicit visitor function exists for a node."""
+        for _field, value in ast.iter_fields(node):
+            if self.should_type_check:
+                break
+
+            if isinstance(value, list):
+                for item in value:
+                    if self.should_type_check:
+                        break
+                    if isinstance(item, ast.AST):
+                        self.visit(item)
+            elif isinstance(value, ast.AST):
+                self.visit(value)
 
 
 error = namedtuple('error', 'lineno col message type vars')
