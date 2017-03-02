@@ -51,7 +51,7 @@ DEFAULT_ARGUMENTS = make_arguments(
     show_error_context=False,
 
     # suppress error messages from unrelated files
-    follow_imports='silent',
+    follow_imports='skip',
 
     # suppress errors about unsatisfied imports
     ignore_missing_imports=True,
@@ -80,7 +80,7 @@ DEFAULT_ARGUMENTS = make_arguments(
 )
 
 
-@attr.s(slots=True, hash=False)
+@attr.s(hash=False)
 class MypyChecker:
     name = 'flake8-mypy'
     version = __version__

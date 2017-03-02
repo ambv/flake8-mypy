@@ -71,8 +71,8 @@ platform=linux
 show_column_numbers=True
 show_error_context=False
 
-# suppress error messages from unrelated files
-follow_imports=silent
+# do not follow imports (except for ones found in typeshed)
+follow_imports=skip
 
 # suppress errors about unsatisfied imports
 ignore_missing_imports=True
@@ -114,6 +114,11 @@ Remember that for the best user experience, your linter integration mode
 shouldn't generally display errors that a full run of *mypy* wouldn't.
 This would be confusing.
 
+Note: chaing the `follow_imports` option might have surprising effects.
+If the file you're linting with Flake8 has other files around it, then in
+"silent" or "normal" mode those files will be used to follow imports.
+This includes imports from [typeshed](https://github.com/python/typeshed/).
+
 
 ## Tests
 
@@ -143,6 +148,12 @@ MIT
 
 
 ## Change Log
+
+### 17.3.1
+
+* switch `follow_imports` from "silent" to "skip" to avoid name clashing
+  files being used to follow imports within
+  [typeshed](https://github.com/python/typeshed/)
 
 ### 17.3.0
 
