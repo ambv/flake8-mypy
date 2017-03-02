@@ -149,6 +149,11 @@ MIT
 
 ## Change Log
 
+### 17.3.2
+
+* bugfix: using *Flake8* with absolute paths now correctly matches *mypy*
+  messages
+
 ### 17.3.1
 
 * switch `follow_imports` from "silent" to "skip" to avoid name clashing

@@ -118,13 +118,7 @@ class MypyChecker:
 
     def _run(self):
         mypy_cmdline = self.build_mypy_cmdline(self.filename, self.options.mypy_config)
-        re_filename = self.filename.replace('.', r'\.')
-        if re_filename.startswith(r'\./'):
-            re_filename = re_filename[3:]
-        mypy_re = re.compile(
-            MYPY_ERROR_TEMPLATE.format(filename=re_filename),
-            re.VERBOSE,
-        )
+        mypy_re = self.build_mypy_re(self.filename)
         last_t499 = 0
         try:
             stdout, stderr, returncode = mypy.api.run(mypy_cmdline)
@@ -195,6 +189,23 @@ class MypyChecker:
             return ['--config-file=' + mypy_config, filename]
 
         return DEFAULT_ARGUMENTS + [filename]
+
+    def build_mypy_re(self, filename):
+        filename = Path(filename)
+        if filename.is_absolute():
+            prefix = Path('.').absolute()
+            try:
+                filename = filename.relative_to(prefix)
+            except ValueError:
+                pass   # not relative to the cwd
+
+        re_filename = str(filename).replace('.', r'\.')
+        if re_filename.startswith(r'\./'):
+            re_filename = re_filename[3:]
+        return re.compile(
+            MYPY_ERROR_TEMPLATE.format(filename=re_filename),
+            re.VERBOSE,
+        )
 
     def set_mypypath(self):
         """Set MYPYPATH so that stubs have precedence over local sources."""
