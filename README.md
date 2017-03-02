@@ -5,7 +5,7 @@ A plugin for [Flake8](http://flake8.pycqa.org/) integrating
 checking as a linter inside editors and other tools that already support
 *Flake8* warning syntax and config.
 
-NOTE: This plugin requires *mypy* >0.471, as of Feb 26th no released
+NOTE: This plugin requires *mypy* >=0.500, as of Mar 1st no released
 version satisfies this yet.  You can use master in the mean time.
 
 
@@ -141,6 +141,14 @@ MIT
 
 
 ## Change Log
+
+### 17.3.0
+
+* performance optimization: skip running *mypy* over files that contain
+  no annotations or imports from `typing`
+
+* bugfix: when running over an entire directory, T484 is now correctly
+  used instead of T499
 
 ### 17.2.0
 
