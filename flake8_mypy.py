@@ -295,7 +295,7 @@ class TypingVisitor(ast.NodeVisitor):
         if (
             node.level == 0 and
             node.module == 'typing' or
-            node.module.startswith('typing.')
+            node.module and node.module.startswith('typing.')
         ):
             self.should_type_check = True
 

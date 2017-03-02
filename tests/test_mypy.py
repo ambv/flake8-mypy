@@ -37,6 +37,7 @@ class MypyTestCase(unittest.TestCase):
         self.assert_visit("import os.typing", False)
         self.assert_visit("from .typing import something", False)
         self.assert_visit("from something import typing", False)
+        self.assert_visit("from . import typing", False)
 
         self.assert_visit("import typing", True)
         self.assert_visit("import typing.io", True)

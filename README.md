@@ -154,6 +154,8 @@ MIT
 * bugfix: using *Flake8* with absolute paths now correctly matches *mypy*
   messages
 
+* bugfix: don't crash on relative imports in the form `from . import X`
+
 ### 17.3.1
 
 * switch `follow_imports` from "silent" to "skip" to avoid name clashing
