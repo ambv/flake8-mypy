@@ -4,7 +4,9 @@ python:
     - 3.6
     - 3.6-dev
     - 3.7-dev
-install: pip install -e .
+install:
+  - python3 -m pip install -U git+git://github.com/python/mypy.git
+  - pip install -e .
 script: python setup.py test
 
 matrix:
