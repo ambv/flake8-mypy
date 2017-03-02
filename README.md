@@ -1,5 +1,7 @@
 # flake8-mypy
 
+[![Build Status](https://travis-ci.org/ambv/flake8-mypy.svg?branch=master)](https://travis-ci.org/ambv/flake8-mypy)
+
 A plugin for [Flake8](http://flake8.pycqa.org/) integrating
 [mypy](http://mypy-lang.org/). The idea is to enable limited type
 checking as a linter inside editors and other tools that already support
