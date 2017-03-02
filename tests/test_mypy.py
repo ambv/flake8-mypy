@@ -18,6 +18,20 @@ class MypyTestCase(unittest.TestCase):
         v.visit(tree)
         self.assertEqual(v.should_type_check, should_type_check)
 
+    def get_mypychecker(self, file):
+        current = Path('.').absolute()
+        filename = Path(__file__).relative_to(current).parent / file
+        with filename.open('r', encoding='utf8', errors='surrogateescape') as f:
+            lines = f.readlines()
+        options = mock.MagicMock()
+        options.mypy_config = None
+        return MypyChecker(
+            filename=str(filename),
+            lines=lines,
+            tree=ast.parse(''.join(lines)),
+            options=options,
+        )
+
     def test_imports(self):
         self.assert_visit("import os", False)
         self.assert_visit("import os.typing", False)
@@ -44,18 +58,7 @@ class MypyTestCase(unittest.TestCase):
         self.assert_visit("def f(a, *args: str, **kwargs: str): ...", True)
 
     def test_invalid_types(self):
-        current = Path('.').absolute()
-        filename = Path(__file__).relative_to(current).parent / 'invalid_types.py'
-        with filename.open('r', encoding='utf8', errors='surrogateescape') as f:
-            lines = f.readlines()
-        options = mock.MagicMock()
-        options.mypy_config = None
-        mpc = MypyChecker(
-            filename=str(filename),
-            lines=lines,
-            tree=ast.parse(''.join(lines)),
-            options=options,
-        )
+        mpc = self.get_mypychecker('invalid_types.py')
         errors = list(mpc.run())
         self.assertEqual(
             errors,
@@ -82,6 +85,32 @@ class MypyTestCase(unittest.TestCase):
                         "unused 'type: ignore' comment",
                     )
                 )
+            ),
+        )
+
+    def test_clash(self):
+        mpc = self.get_mypychecker('clash/london_calling.py')
+        errors = list(mpc.run())
+        self.assertEqual(
+            errors,
+            self.errors(
+                T484(
+                    6,
+                    4,
+                    vars=(
+                        'Incompatible return value type (got "UserDict", '
+                        'expected Counter[Any])',
+                    ),
+                ),
+                T484(
+                    6,
+                    11,
+                    vars=(
+                        "Cannot instantiate abstract class 'UserDict' with "
+                        "abstract attributes '__delitem__', '__getitem__', "
+                        "'__iter__', '__len__' and '__setitem__'",
+                    ),
+                ),
             ),
         )
 

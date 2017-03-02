@@ -4,9 +4,11 @@ from collections import namedtuple
 from functools import partial
 import itertools
 import logging
+import os
 from pathlib import Path
 import re
 from tempfile import NamedTemporaryFile
+import time
 import traceback
 
 import attr
@@ -101,6 +103,9 @@ class MypyChecker:
         if not visitor.should_type_check:
             return  # typing not used in the module
 
+        if not self.options.mypy_config:
+            self.set_mypypath()
+
         if self.filename in ('(none)', 'stdin'):
             with NamedTemporaryFile('w', prefix='tmpmypy_', suffix='.py') as f:
                 self.filename = f.name
@@ -190,6 +195,59 @@ class MypyChecker:
             return ['--config-file=' + mypy_config, filename]
 
         return DEFAULT_ARGUMENTS + [filename]
+
+    def set_mypypath(self):
+        """Set MYPYPATH so that stubs have precedence over local sources."""
+
+        if 'MYPYPATH' in os.environ:
+            return
+
+        typeshed_root = None
+        count = 0
+        started = time.time()
+        for parent in itertools.chain(
+            # Look in current script's parents, useful for zipapps.
+            Path(__file__).parents,
+            # Look around site-packages, useful for virtualenvs.
+            Path(mypy.api.__file__).parents,
+            # Look in global paths, useful for globally installed.
+            Path(os.__file__).parents,
+        ):
+            count += 1
+            candidate = parent / 'lib' / 'mypy' / 'typeshed'
+            if candidate.is_dir():
+                typeshed_root = candidate
+                break
+
+            # Also check the non-installed path, useful for `setup.py develop`.
+            candidate = parent / 'typeshed'
+            if candidate.is_dir():
+                typeshed_root = candidate
+                break
+
+        LOG.debug(
+            'Checked %d paths in %.2fs looking for typeshed. Found %s',
+            count,
+            time.time() - started,
+            typeshed_root,
+        )
+
+        if not typeshed_root:
+            return
+
+        stdlib_dirs = ('3.6', '3.5', '3.4', '3.3', '3.2', '3', '2and3')
+        stdlib_stubs = [
+            typeshed_root / 'stdlib' / stdlib_dir
+            for stdlib_dir in stdlib_dirs
+        ]
+        third_party_dirs = ('3.6', '3', '2and3')
+        third_party_stubs = [
+            typeshed_root / 'third_party' / tp_dir
+            for tp_dir in third_party_dirs
+        ]
+        os.environ['MYPYPATH'] = ':'.join(
+            str(p) for p in stdlib_stubs + third_party_stubs
+        )
 
 
 @attr.s
