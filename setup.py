@@ -30,7 +30,7 @@ except(IOError, ImportError):
 _version_re = re.compile(r'__version__\s+=\s+(?P<version>.*)')
 
 
-with open(os.path.join(current_dir, 'flake8_mypy.py'), 'r') as f:
+with open(os.path.join(current_dir, 'flake8_mypy.py'), 'r', encoding='utf8') as f:
     version = _version_re.search(f.read()).group('version')
     version = str(ast.literal_eval(version))
 
