@@ -155,6 +155,9 @@ MIT
   files being used to follow imports within
   [typeshed](https://github.com/python/typeshed/)
 
+* set MYPYPATH by default to give stubs from typeshed higher priority
+  than local sources
+
 ### 17.3.0
 
 * performance optimization: skip running *mypy* over files that contain

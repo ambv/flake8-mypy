@@ -16,7 +16,7 @@ import mypy.api
 import pycodestyle
 
 
-__version__ = '17.3.0'
+__version__ = '17.3.1'
 
 
 def make_arguments(**kwargs):
