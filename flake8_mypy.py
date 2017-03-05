@@ -34,11 +34,8 @@ def make_arguments(**kwargs):
     return result
 
 
-def set_mypypath(force=False):
-    """Set MYPYPATH so that stubs have precedence over local sources."""
-
-    if 'MYPYPATH' in os.environ and not force:
-        return
+def calculate_mypypath():
+    """Return MYPYPATH so that stubs have precedence over local sources."""
 
     typeshed_root = None
     count = 0
@@ -71,7 +68,7 @@ def set_mypypath(force=False):
     )
 
     if not typeshed_root:
-        return
+        return []
 
     stdlib_dirs = ('3.6', '3.5', '3.4', '3.3', '3.2', '3', '2and3')
     stdlib_stubs = [
@@ -83,9 +80,9 @@ def set_mypypath(force=False):
         typeshed_root / 'third_party' / tp_dir
         for tp_dir in third_party_dirs
     ]
-    os.environ['MYPYPATH'] = ':'.join(
+    return [
         str(p) for p in stdlib_stubs + third_party_stubs
-    )
+    ]
 
 
 # invalid_types.py:5: error: Missing return statement
@@ -159,8 +156,8 @@ class MypyChecker:
         if not visitor.should_type_check:
             return  # typing not used in the module
 
-        if not self.options.mypy_config:
-            set_mypypath()
+        if not self.options.mypy_config and 'MYPYPATH' not in os.environ:
+            os.environ['MYPYPATH'] = ':'.join(calculate_mypypath())
 
         if self.filename in ('(none)', 'stdin'):
             with NamedTemporaryFile('w', prefix='tmpmypy_', suffix='.py') as f:
