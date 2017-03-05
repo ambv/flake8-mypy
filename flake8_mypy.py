@@ -10,18 +10,33 @@ import re
 from tempfile import NamedTemporaryFile
 import time
 import traceback
+from typing import (
+    Any,
+    Iterator,
+    List,
+    Optional,
+    Pattern,
+    Tuple,
+    Type,
+    TYPE_CHECKING,
+    Union,
+)
 
 import attr
 import mypy.api
+
+if TYPE_CHECKING:
+    import flake8.options.manager.OptionManager  # noqa
 
 
 __version__ = '17.3.2'
 
 
 noqa = re.compile(r'# noqa\b', re.I).search
+Error = namedtuple('Error', 'lineno col message type vars')
 
 
-def make_arguments(**kwargs):
+def make_arguments(**kwargs: Union[str, bool]) -> List[str]:
     result = []
     for k, v in kwargs.items():
         k = k.replace('_', '-')
@@ -34,7 +49,7 @@ def make_arguments(**kwargs):
     return result
 
 
-def calculate_mypypath():
+def calculate_mypypath() -> List[str]:
     """Return MYPYPATH so that stubs have precedence over local sources."""
 
     typeshed_root = None
@@ -135,6 +150,9 @@ DEFAULT_ARGUMENTS = make_arguments(
 )
 
 
+_Flake8Error = Tuple[int, int, str, Type['MypyChecker']]
+
+
 @attr.s(hash=False)
 class MypyChecker:
     name = 'flake8-mypy'
@@ -146,7 +164,7 @@ class MypyChecker:
     options = attr.ib(default=None)
     visitor = attr.ib(default=attr.Factory(lambda: TypingVisitor))
 
-    def run(self):
+    def run(self) -> Iterator[_Flake8Error]:
         if not self.lines:
             return  # empty file, no need checking.
 
@@ -169,7 +187,7 @@ class MypyChecker:
         else:
             yield from self._run()
 
-    def _run(self):
+    def _run(self) -> Iterator[_Flake8Error]:
         mypy_cmdline = self.build_mypy_cmdline(self.filename, self.options.mypy_config)
         mypy_re = self.build_mypy_re(self.filename)
         last_t499 = 0
@@ -203,19 +221,19 @@ class MypyChecker:
                     yield self.adapt_error(T499(last_t499, 0, vars=(line,)))
 
     @classmethod
-    def adapt_error(cls, e):
+    def adapt_error(cls, e: Any) -> _Flake8Error:
         """Adapts the extended error namedtuple to be compatible with Flake8."""
         return e._replace(message=e.message.format(*e.vars))[:4]
 
     @classmethod
-    def add_options(cls, parser):
+    def add_options(cls, parser: 'flake8.options.manager.OptionManager') -> None:
         parser.add_option(
             '--mypy-config',
             parse_from_config=True,
             help="path to a custom mypy configuration file",
         )
 
-    def make_error(self, line, regex):
+    def make_error(self, line: str, regex: Pattern) -> Error:
         m = regex.match(line)
         if not m:
             raise ValueError("unmatched line")
@@ -228,13 +246,15 @@ class MypyChecker:
 
         return T484(lineno, column, vars=(message,))
 
-    def build_mypy_cmdline(self, filename, mypy_config):
+    def build_mypy_cmdline(
+        self, filename: str, mypy_config: Optional[str]
+    ) -> List[str]:
         if mypy_config:
             return ['--config-file=' + mypy_config, filename]
 
         return DEFAULT_ARGUMENTS + [filename]
 
-    def build_mypy_re(self, filename):
+    def build_mypy_re(self, filename: Union[str, Path]) -> Pattern:
         filename = Path(filename)
         if filename.is_absolute():
             prefix = Path('.').absolute()
@@ -257,7 +277,7 @@ class TypingVisitor(ast.NodeVisitor):
     """Used to determine if the file is using annotations at all."""
     should_type_check = attr.ib(default=False)
 
-    def visit_FunctionDef(self, node):
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         if node.returns:
             self.should_type_check = True
             return
@@ -272,7 +292,7 @@ class TypingVisitor(ast.NodeVisitor):
         if (va and va.annotation) or (kw and kw.annotation):
             self.should_type_check = True
 
-    def visit_Import(self, node):
+    def visit_Import(self, node: ast.Import) -> None:
         for name in node.names:
             if (
                 isinstance(name, ast.alias) and
@@ -282,7 +302,7 @@ class TypingVisitor(ast.NodeVisitor):
                 self.should_type_check = True
                 break
 
-    def visit_ImportFrom(self, node):
+    def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
         if (
             node.level == 0 and
             node.module == 'typing' or
@@ -290,7 +310,7 @@ class TypingVisitor(ast.NodeVisitor):
         ):
             self.should_type_check = True
 
-    def generic_visit(self, node):
+    def generic_visit(self, node: ast.AST) -> None:
         """Called if no explicit visitor function exists for a node."""
         for _field, value in ast.iter_fields(node):
             if self.should_type_check:
@@ -306,26 +326,34 @@ class TypingVisitor(ast.NodeVisitor):
                 self.visit(value)
 
 
-error = namedtuple('error', 'lineno col message type vars')
-Error = partial(partial, error, type=MypyChecker, vars=())
-
-
 # Generic mypy error
-T484 = Error(
+T484 = partial(
+    Error,
     message="T484 {}",
+    type=MypyChecker,
+    vars=(),
 )
 
 # Generic mypy note
-T400 = Error(
+T400 = partial(
+    Error,
     message="T400 note: {}",
+    type=MypyChecker,
+    vars=(),
 )
 
 # Internal mypy error (summary)
-T498 = Error(
+T498 = partial(
+    Error,
     message="T498 Internal mypy error '{}': {}",
+    type=MypyChecker,
+    vars=(),
 )
 
 # Internal mypy error (traceback, stderr, unmatched line)
-T499 = Error(
+T499 = partial(
+    Error,
     message="T499 {}",
+    type=MypyChecker,
+    vars=(),
 )

@@ -1,30 +1,33 @@
 import ast
 from pathlib import Path
+import subprocess
+from typing import List, Union
 import unittest
 from unittest import mock
 
 from flake8_mypy import TypingVisitor, MypyChecker, T484, T400
+from flake8_mypy import Error, _Flake8Error
 
 
 class MypyTestCase(unittest.TestCase):
-    maxDiff = None
+    maxDiff = None  # type: int
 
-    def errors(self, *errors):
+    def errors(self, *errors: Error) -> List[_Flake8Error]:
         return [MypyChecker.adapt_error(e) for e in errors]
 
-    def assert_visit(self, code, should_type_check):
+    def assert_visit(self, code: str, should_type_check: bool) -> None:
         tree = ast.parse(code)
         v = TypingVisitor()
         v.visit(tree)
         self.assertEqual(v.should_type_check, should_type_check)
 
-    def get_mypychecker(self, file):
+    def get_mypychecker(self, file: Union[Path, str]) -> MypyChecker:
         current = Path('.').absolute()
         filename = Path(__file__).relative_to(current).parent / file
         with filename.open('r', encoding='utf8', errors='surrogateescape') as f:
             lines = f.readlines()
         options = mock.MagicMock()
-        options.mypy_config = None
+        options.mypy_config = None  # type: ignore
         return MypyChecker(
             filename=str(filename),
             lines=lines,
@@ -32,7 +35,7 @@ class MypyTestCase(unittest.TestCase):
             options=options,
         )
 
-    def test_imports(self):
+    def test_imports(self) -> None:
         self.assert_visit("import os", False)
         self.assert_visit("import os.typing", False)
         self.assert_visit("from .typing import something", False)
@@ -45,7 +48,7 @@ class MypyTestCase(unittest.TestCase):
         self.assert_visit("from typing import List", True)
         self.assert_visit("from typing.io import IO", True)
 
-    def test_functions(self):
+    def test_functions(self) -> None:
         self.assert_visit("def f(): ...", False)
         self.assert_visit("def f(a): ...", False)
         self.assert_visit("def f(a, b=None): ...", False)
@@ -58,7 +61,7 @@ class MypyTestCase(unittest.TestCase):
         self.assert_visit("def f(a, *, b: str = None): ...", True)
         self.assert_visit("def f(a, *args: str, **kwargs: str): ...", True)
 
-    def test_invalid_types(self):
+    def test_invalid_types(self) -> None:
         mpc = self.get_mypychecker('invalid_types.py')
         errors = list(mpc.run())
         self.assertEqual(
@@ -89,7 +92,7 @@ class MypyTestCase(unittest.TestCase):
             ),
         )
 
-    def test_clash(self):
+    def test_clash(self) -> None:
         mpc = self.get_mypychecker('clash/london_calling.py')
         errors = list(mpc.run())
         self.assertEqual(
@@ -114,6 +117,30 @@ class MypyTestCase(unittest.TestCase):
                 ),
             ),
         )
+
+    def test_selfclean_flake8_mypy(self) -> None:
+        filename = Path(__file__).absolute().parent.parent / 'flake8_mypy.py'
+        proc = subprocess.run(
+            ['flake8', str(filename)],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=60,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stdout.decode('utf8'))
+        self.assertEqual(proc.stdout, b'')
+        # self.assertEqual(proc.stderr, b'')
+
+    def test_selfclean_test_mypy(self) -> None:
+        filename = Path(__file__).absolute()
+        proc = subprocess.run(
+            ['flake8', str(filename)],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=60,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stdout.decode('utf8'))
+        self.assertEqual(proc.stdout, b'')
+        # self.assertEqual(proc.stderr, b'')
 
 
 if __name__ == '__main__':
