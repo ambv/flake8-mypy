@@ -175,15 +175,6 @@ class MypyChecker:
 
         return T484(lineno, column, vars=(message,))
 
-    def ensure_lines(self):
-        """Read the file if it wasn't yet. Populate `sys.lines`."""
-        if self.lines:
-            return
-
-        path = Path(self.filename)
-        text = path.read_text(encoding='utf8', errors='surrogateescape')
-        self.lines = text.splitlines()
-
     def build_mypy_cmdline(self, filename, mypy_config):
         if mypy_config:
             return ['--config-file=' + mypy_config, filename]
