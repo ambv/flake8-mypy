@@ -13,10 +13,12 @@ import traceback
 
 import attr
 import mypy.api
-import pycodestyle
 
 
 __version__ = '17.3.2'
+
+
+noqa = re.compile(r'# noqa\b', re.I).search
 
 
 def make_arguments(**kwargs):
@@ -194,7 +196,7 @@ class MypyChecker:
                     yield self.adapt_error(T499(last_t499, 0, vars=(line,)))
                     continue
 
-                if pycodestyle.noqa(self.lines[e.lineno - 1]):
+                if noqa(self.lines[e.lineno - 1]):
                     continue
 
                 yield self.adapt_error(e)
