@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     import flake8.options.manager.OptionManager  # noqa
 
 
-__version__ = '17.3.2'
+__version__ = '17.3.3'
 
 
 noqa = re.compile(r'# noqa\b', re.I).search
@@ -211,7 +211,7 @@ class MypyChecker:
                     yield self.adapt_error(T499(last_t499, 0, vars=(line,)))
                     continue
 
-                if noqa(self.lines[e.lineno - 1]):
+                if self.omit_error(e):
                     continue
 
                 yield self.adapt_error(e)
@@ -224,6 +224,16 @@ class MypyChecker:
     def adapt_error(cls, e: Any) -> _Flake8Error:
         """Adapts the extended error namedtuple to be compatible with Flake8."""
         return e._replace(message=e.message.format(*e.vars))[:4]
+
+    def omit_error(self, e: Error) -> bool:
+        """Returns True if error should be ignored."""
+        if (
+            e.vars and
+            e.vars[0] == 'No parent module -- cannot perform relative import'
+        ):
+            return True
+
+        return bool(noqa(self.lines[e.lineno - 1]))
 
     @classmethod
     def add_options(cls, parser: 'flake8.options.manager.OptionManager') -> None:

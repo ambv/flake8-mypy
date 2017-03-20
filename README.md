@@ -149,6 +149,10 @@ MIT
 
 ## Change Log
 
+### 17.3.3
+
+* suppress *mypy* messages about relative imports
+
 ### 17.3.2
 
 * bugfix: using *Flake8* with absolute paths now correctly matches *mypy*

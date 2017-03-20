@@ -27,7 +27,7 @@ class MypyTestCase(unittest.TestCase):
         with filename.open('r', encoding='utf8', errors='surrogateescape') as f:
             lines = f.readlines()
         options = mock.MagicMock()
-        options.mypy_config = None  # type: ignore
+        options.mypy_config = None
         return MypyChecker(
             filename=str(filename),
             lines=lines,
@@ -117,6 +117,11 @@ class MypyTestCase(unittest.TestCase):
                 ),
             ),
         )
+
+    def test_relative_imports(self) -> None:
+        mpc = self.get_mypychecker('relative_imports.py')
+        errors = list(mpc.run())
+        self.assertEqual(errors, [])
 
     def test_selfclean_flake8_mypy(self) -> None:
         filename = Path(__file__).absolute().parent.parent / 'flake8_mypy.py'
