@@ -93,6 +93,7 @@ class MypyTestCase(unittest.TestCase):
         )
 
     def test_clash(self) -> None:
+        """We set MYPYPATH to prioritize typeshed over local modules."""
         mpc = self.get_mypychecker('clash/london_calling.py')
         errors = list(mpc.run())
         self.assertEqual(
@@ -102,17 +103,8 @@ class MypyTestCase(unittest.TestCase):
                     6,
                     4,
                     vars=(
-                        'Incompatible return value type (got "UserDict", '
+                        'Incompatible return value type (got UserDict[<nothing>, <nothing>], '
                         'expected Counter[Any])',
-                    ),
-                ),
-                T484(
-                    6,
-                    11,
-                    vars=(
-                        "Cannot instantiate abstract class 'UserDict' with "
-                        "abstract attributes '__delitem__', '__getitem__', "
-                        "'__iter__', '__len__' and '__setitem__'",
                     ),
                 ),
             ),
