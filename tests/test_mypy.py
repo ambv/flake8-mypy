@@ -103,8 +103,9 @@ class MypyTestCase(unittest.TestCase):
                     6,
                     4,
                     vars=(
-                        'Incompatible return value type (got UserDict[<nothing>, <nothing>], '
-                        'expected Counter[Any])',
+                        'Incompatible return value type '
+                        '(got "UserDict[<nothing>, <nothing>]", '
+                        'expected "Counter[Any]")',
                     ),
                 ),
             ),
