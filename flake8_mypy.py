@@ -185,7 +185,7 @@ class MypyChecker:
         # directory.
         with TemporaryDirectory(prefix='flake8mypy_') as d:
             with NamedTemporaryFile(
-                'w', prefix='tmpmypy_', suffix='.py', dir=d
+                'w', encoding='utf8', prefix='tmpmypy_', suffix='.py', dir=d
             ) as f:
                 self.filename = f.name
                 for line in self.lines:
