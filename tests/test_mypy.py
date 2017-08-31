@@ -5,7 +5,7 @@ from typing import List, Union
 import unittest
 from unittest import mock
 
-from flake8_mypy import TypingVisitor, MypyChecker, T484, T400
+from flake8_mypy import TypingVisitor, MypyChecker, T484 
 from flake8_mypy import Error, _Flake8Error
 
 
@@ -82,13 +82,6 @@ class MypyTestCase(unittest.TestCase):
                         'Unsupported operand types for + ("int" and "str")',
                     ),
                 ),
-                T400(
-                    13,
-                    0,
-                    vars=(
-                        "unused 'type: ignore' comment",
-                    )
-                )
             ),
         )
 
