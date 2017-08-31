@@ -74,6 +74,9 @@ show_error_context=False
 # do not follow imports (except for ones found in typeshed)
 follow_imports=skip
 
+# since we're ignoring imports, writing .mypy_cache doesn't make any sense
+cache_dir=/dev/null
+
 # suppress errors about unsatisfied imports
 ignore_missing_imports=True
 
@@ -89,12 +92,13 @@ strict_optional=True
 # ensure all execution paths are returning
 warn_no_return=True
 
-# lint-style cleanliness for typing
-warn_redundant_casts=True
-warn_unused_ignores=True
+# lint-style cleanliness for typing needs to be disabled; returns more errors
+# than the full run.
+warn_redundant_casts=False
+warn_unused_ignores=False
 
-# The following are off by default.  Flip them on if you feel
-# adventurous.
+# The following are off by default since they're too noisy.
+# Flip them on if you feel adventurous.
 disallow_untyped_defs=False
 check_untyped_defs=False
 ```
@@ -148,6 +152,14 @@ MIT
 
 
 ## Change Log
+
+### 17.8.0
+
+* avoid raising errors in the default config which don't happen during
+  a full run (disable warn_unused_ignores and warn_redundant_casts)
+
+* always run type checks from a temporary directory to avoid
+  clashing with unrelated files in the same directory
 
 ### 17.3.3
 
