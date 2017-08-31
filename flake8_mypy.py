@@ -123,6 +123,9 @@ DEFAULT_ARGUMENTS = make_arguments(
     # suppress error messages from unrelated files
     follow_imports='skip',
 
+    # since we're ignoring imports, writing .mypy_cache doesn't make any sense
+    cache_dir=os.devnull,
+
     # suppress errors about unsatisfied imports
     ignore_missing_imports=True,
 
@@ -134,7 +137,6 @@ DEFAULT_ARGUMENTS = make_arguments(
 
     # treat Optional per PEP 484
     strict_optional=True,
-    # show_none_errors=True,  # it's in the docs but not in master?
 
     # ensure all execution paths are returning
     warn_no_return=True,
