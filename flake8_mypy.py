@@ -7,7 +7,7 @@ import logging
 import os
 from pathlib import Path
 import re
-from tempfile import NamedTemporaryFile
+from tempfile import NamedTemporaryFile, TemporaryDirectory
 import time
 import traceback
 from typing import (
@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     import flake8.options.manager.OptionManager  # noqa
 
 
-__version__ = '17.3.4'
+__version__ = '17.8.0'
 
 
 noqa = re.compile(r'# noqa\b', re.I).search
@@ -177,15 +177,18 @@ class MypyChecker:
         if not self.options.mypy_config and 'MYPYPATH' not in os.environ:
             os.environ['MYPYPATH'] = ':'.join(calculate_mypypath())
 
-        if self.filename in ('(none)', 'stdin'):
-            with NamedTemporaryFile('w', prefix='tmpmypy_', suffix='.py') as f:
+        # Always put the file in a separate temporary directory to avoid
+        # unexpected clashes with other .py and .pyi files in the same original
+        # directory.
+        with TemporaryDirectory(prefix='flake8mypy_') as d:
+            with NamedTemporaryFile(
+                'w', prefix='tmpmypy_', suffix='.py', dir=d
+            ) as f:
                 self.filename = f.name
                 for line in self.lines:
                     f.write(line)
                 f.flush()
                 yield from self._run()
-        else:
-            yield from self._run()
 
     def _run(self) -> Iterator[_Flake8Error]:
         mypy_cmdline = self.build_mypy_cmdline(self.filename, self.options.mypy_config)
