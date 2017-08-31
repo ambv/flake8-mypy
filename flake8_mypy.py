@@ -139,9 +139,10 @@ DEFAULT_ARGUMENTS = make_arguments(
     # ensure all execution paths are returning
     warn_no_return=True,
 
-    # lint-style cleanliness for typing
-    warn_redundant_casts=True,
-    warn_unused_ignores=True,
+    # lint-style cleanliness for typing needs to be disabled; returns more errors
+    # than the full run.
+    warn_redundant_casts=False,
+    warn_unused_ignores=False,
 
     # The following are off by default.  Flip them on if you feel
     # adventurous.
