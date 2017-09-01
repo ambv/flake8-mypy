@@ -5,7 +5,7 @@ from typing import List, Union
 import unittest
 from unittest import mock
 
-from flake8_mypy import TypingVisitor, MypyChecker, T484 
+from flake8_mypy import TypingVisitor, MypyChecker, T484
 from flake8_mypy import Error, _Flake8Error
 
 
@@ -112,24 +112,26 @@ class MypyTestCase(unittest.TestCase):
     def test_selfclean_flake8_mypy(self) -> None:
         filename = Path(__file__).absolute().parent.parent / 'flake8_mypy.py'
         proc = subprocess.run(
-            ['flake8', str(filename)],
+            ['flake8', '-j0', str(filename)],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             timeout=60,
         )
-        self.assertEqual(proc.returncode, 0, proc.stdout.decode('utf8'))
+        msgs = "\n\n".join((proc.stdout.decode('utf8'), proc.stderr.decode('utf8')))
+        self.assertEqual(proc.returncode, 0, msgs)
         self.assertEqual(proc.stdout, b'')
         # self.assertEqual(proc.stderr, b'')
 
     def test_selfclean_test_mypy(self) -> None:
         filename = Path(__file__).absolute()
         proc = subprocess.run(
-            ['flake8', str(filename)],
+            ['flake8', '-j0', str(filename)],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             timeout=60,
         )
-        self.assertEqual(proc.returncode, 0, proc.stdout.decode('utf8'))
+        msgs = "\n\n".join((proc.stdout.decode('utf8'), proc.stderr.decode('utf8')))
+        self.assertEqual(proc.returncode, 0, msgs)
         self.assertEqual(proc.stdout, b'')
         # self.assertEqual(proc.stderr, b'')
 
