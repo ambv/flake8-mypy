@@ -7,9 +7,6 @@ A plugin for [Flake8](http://flake8.pycqa.org/) integrating
 checking as a linter inside editors and other tools that already support
 *Flake8* warning syntax and config.
 
-NOTE: This plugin requires *mypy* >=0.500, as of Mar 1st no released
-version satisfies this yet.  You can use master in the mean time.
-
 
 ## List of warnings
 
