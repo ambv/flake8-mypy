@@ -163,7 +163,7 @@ class MypyChecker:
 
     tree = attr.ib(default=None)
     filename = attr.ib(default='(none)')
-    lines = attr.ib(default=[])
+    lines = attr.ib(default=[])  # type: List[str]
     options = attr.ib(default=None)
     visitor = attr.ib(default=attr.Factory(lambda: TypingVisitor))
 
