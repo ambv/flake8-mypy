@@ -7,7 +7,6 @@ import logging
 import os
 from pathlib import Path
 import re
-from tempfile import NamedTemporaryFile, TemporaryDirectory
 import time
 import traceback
 from typing import (
@@ -180,18 +179,7 @@ class MypyChecker:
         if not self.options.mypy_config and 'MYPYPATH' not in os.environ:
             os.environ['MYPYPATH'] = ':'.join(calculate_mypypath())
 
-        # Always put the file in a separate temporary directory to avoid
-        # unexpected clashes with other .py and .pyi files in the same original
-        # directory.
-        with TemporaryDirectory(prefix='flake8mypy_') as d:
-            with NamedTemporaryFile(
-                'w', encoding='utf8', prefix='tmpmypy_', suffix='.py', dir=d
-            ) as f:
-                self.filename = f.name
-                for line in self.lines:
-                    f.write(line)
-                f.flush()
-                yield from self._run()
+        yield from self._run()
 
     def _run(self) -> Iterator[_Flake8Error]:
         mypy_cmdline = self.build_mypy_cmdline(self.filename, self.options.mypy_config)
