@@ -67,17 +67,17 @@ class MypyTestCase(unittest.TestCase):
         self.assertEqual(
             errors,
             self.errors(
-                T484(5, 0, vars=('Missing return statement',)),
+                T484(5, 1, vars=('Missing return statement',)),
                 T484(
                     10,
-                    4,
+                    5,
                     vars=(
                         'Incompatible return value type (got "int", expected "str")',
                     ),
                 ),
                 T484(
                     10,
-                    11,
+                    12,
                     vars=(
                         'Unsupported operand types for + ("int" and "str")',
                     ),
@@ -94,7 +94,7 @@ class MypyTestCase(unittest.TestCase):
             self.errors(
                 T484(
                     6,
-                    4,
+                    5,
                     vars=(
                         'Incompatible return value type '
                         '(got "UserDict[<nothing>, <nothing>]", '
