@@ -263,7 +263,7 @@ class MypyChecker:
             raise ValueError("unmatched line")
 
         lineno = int(m.group('lineno'))
-        column = int(m.group('column') or 0)
+        column = int(m.group('column') or 1) - 1
         message = m.group('message').strip()
         if m.group('class') == 'note':
             return T400(lineno, column, vars=(message,))
