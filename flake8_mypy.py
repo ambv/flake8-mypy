@@ -279,7 +279,7 @@ class MypyChecker:
             except ValueError:
                 pass   # not relative to the cwd
 
-        re_filename = str(filename).replace('.', r'\.')
+        re_filename = re.escape(str(filename))
         if re_filename.startswith(r'\./'):
             re_filename = re_filename[3:]
         return re.compile(
