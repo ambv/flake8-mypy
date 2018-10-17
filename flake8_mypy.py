@@ -85,12 +85,12 @@ def calculate_mypypath() -> List[str]:
     if not typeshed_root:
         return []
 
-    stdlib_dirs = ('3.6', '3.5', '3.4', '3.3', '3.2', '3', '2and3')
+    stdlib_dirs = ('3.7', '3.6', '3.5', '3.4', '3.3', '3.2', '3', '2and3')
     stdlib_stubs = [
         typeshed_root / 'stdlib' / stdlib_dir
         for stdlib_dir in stdlib_dirs
     ]
-    third_party_dirs = ('3.6', '3', '2and3')
+    third_party_dirs = ('3.7', '3.6', '3', '2and3')
     third_party_stubs = [
         typeshed_root / 'third_party' / tp_dir
         for tp_dir in third_party_dirs
@@ -113,7 +113,6 @@ MYPY_ERROR_TEMPLATE = r"""
 $"""
 LOG = logging.getLogger('flake8.mypy')
 DEFAULT_ARGUMENTS = make_arguments(
-    python_version='3.6',
     platform='linux',
 
     # flake8-mypy expects the two following for sensible formatting
