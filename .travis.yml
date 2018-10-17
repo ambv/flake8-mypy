@@ -4,6 +4,7 @@ python:
     - 3.6
     - 3.6-dev
     - 3.7-dev
+    - 3.7
 install:
   - python3 -m pip install -U git+git://github.com/python/mypy.git
   - pip install -e .
