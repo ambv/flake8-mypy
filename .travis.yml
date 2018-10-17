@@ -10,6 +10,6 @@ install:
   - pip install -e .
 script: python setup.py test
 
-matrix:
-  allow_failures:
-    python: "3.7-dev"
+# use unsupported xenial
+dist: xenial
+sudo: required
