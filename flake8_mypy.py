@@ -230,8 +230,8 @@ class MypyChecker:
                 yield self.adapt_error(e)
 
             for line in stderr.splitlines():
-                    last_t499 += 1
-                    yield self.adapt_error(T499(last_t499, 0, vars=(line,)))
+                last_t499 += 1
+                yield self.adapt_error(T499(last_t499, 0, vars=(line,)))
 
     @classmethod
     def adapt_error(cls, e: Any) -> _Flake8Error:
