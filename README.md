@@ -1,6 +1,14 @@
 # flake8-mypy
 
-[![Build Status](https://travis-ci.org/ambv/flake8-mypy.svg?branch=master)](https://travis-ci.org/ambv/flake8-mypy)
+## NOTE: THIS PROJECT IS DEAD
+
+It was created in early 2017 when Mypy performance was often insufficient for
+in-editor linting. The Flake8 plugin traded correctness for performance,
+making Mypy only check a bare minimum of problems. These days Mypy is
+accelerated with mypyc, as well as uses aggressive caching to speed up
+incremental checks. It's no longer worth it to use hacks such as flake8-mypy.
+
+## What was the project anyway?
 
 A plugin for [Flake8](http://flake8.pycqa.org/) integrating
 [mypy](http://mypy-lang.org/). The idea is to enable limited type
