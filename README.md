@@ -106,6 +106,10 @@ warn_unused_ignores=False
 # Flip them on if you feel adventurous.
 disallow_untyped_defs=False
 check_untyped_defs=False
+
+# Python3 doesn't require __init__.py, but MyPy won't find modules without
+# init files unless this is set to True
+namespace_packages=True
 ```
 
 If you disagree with the defaults above, you can specify your own *mypy*
